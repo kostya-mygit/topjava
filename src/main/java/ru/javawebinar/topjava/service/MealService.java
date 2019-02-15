@@ -2,12 +2,15 @@ package ru.javawebinar.topjava.service;
 
 import ru.javawebinar.topjava.model.Meal;
 
-import java.util.List;
+import java.util.Collection;
 
 public interface MealService {
-    List<Meal> list();
-    void add(Meal meal);
-    void update(Meal meal);
-    void delete(int id);
+    Collection<Meal> getAll();
+
     Meal getById(int id);
+
+    Meal save(Meal meal);
+
+    void delete(int id);
+
 }

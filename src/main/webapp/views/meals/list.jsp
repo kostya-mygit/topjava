@@ -7,11 +7,7 @@
 <body>
 <h3><a href="index.html">Home</a></h3>
 <h2>List meals</h2>
-<form action="meals" method="post">
-    <input type="hidden" name="action" value="showAddForm">
-    <input type="hidden" name="caloriesPerDay" value="${caloriesPerDay}">
-    <input type="submit" value="Add new meal">
-</form>
+<a href="meals?action=create&caloriesPerDay=${caloriesPerDay}">Create new meal</a>
 <table>
     <tr>
         <th hidden></th>
@@ -23,24 +19,15 @@
         <th>Delete</th>
     </tr>
     <c:forEach items="${meals}" var="meal">
-        <tr style="color: ${meal.isExcess() ? "red" : "green"}">
-            <td hidden>${meal.getId()}</td>
+        <jsp:useBean id="meal" scope="page" type="ru.javawebinar.topjava.model.MealTo"/>
+        <tr style="color: ${meal.excess ? "red" : "green"}">
+            <td hidden>${meal.id}</td>
             <td>${meal.getDate()} ${meal.getTime()}</td>
-            <td>${meal.getDescription()}</td>
-            <td>${meal.getCalories()}</td>
-            <td>${meal.isExcess()}</td>
-            <td><form action = "meals" method="post">
-                <input type="hidden" name="action" value="showUpdateForm">
-                <input type="hidden" name="caloriesPerDay" value="${caloriesPerDay}">
-                <input type="hidden" name="id" value="${meal.getId()}">
-                <input type="submit" value="Update" style="float:left">
-            </form></td>
-            <td><form action="meals" method="post">
-                <input type="hidden" name="action" value="delete">
-                <input type="hidden" name="caloriesPerDay" value="${caloriesPerDay}">
-                <input type="hidden" name="id" value="${meal.getId()}">
-                <input type="submit" value="Delete" style="float:left">
-            </form></td>
+            <td>${meal.description}</td>
+            <td>${meal.calories}</td>
+            <td>${meal.excess}</td>
+            <td><a href="meals?action=update&id=${meal.id}&caloriesPerDay=${caloriesPerDay}">Update</a></td>
+            <td><a href="meals?action=delete&id=${meal.id}&caloriesPerDay=${caloriesPerDay}">Delete</a></td>
         </tr>
     </c:forEach>
 </table>
