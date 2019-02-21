@@ -9,6 +9,7 @@ import ru.javawebinar.topjava.service.MealService;
 import ru.javawebinar.topjava.to.MealTo;
 import ru.javawebinar.topjava.util.DateTimeUtil;
 import ru.javawebinar.topjava.util.MealsUtil;
+import ru.javawebinar.topjava.web.SecurityUtil;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -112,6 +113,7 @@ public class MealRestController {
             case "all":
             default:
                 log.info("getAll");
+                SecurityUtil.setUserId(Integer.parseInt(request.getParameter("userId")));
                 request.setAttribute("meals", getAll());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
