@@ -24,17 +24,22 @@ import java.util.Objects;
 
 import static ru.javawebinar.topjava.util.ValidationUtil.assureIdConsistent;
 import static ru.javawebinar.topjava.util.ValidationUtil.checkNew;
-import static ru.javawebinar.topjava.web.SecurityUtil.authUserId;
 
 @Controller
 public class MealRestController {
     protected final Logger log = LoggerFactory.getLogger(getClass());
 
+    private final MealService service;
+
     @Autowired
-    private MealService service;
+    public MealRestController(MealService service) {
+        this.service = service;
+    }
 
     public List<MealTo> getAll() {
-        return getFilteredByDateTime(null, null, null, null);
+        int userId = SecurityUtil.authUserId();
+        log.info("getAll for user {}", userId);
+        return MealsUtil.getWithExcess(service.getAll(userId), MealsUtil.DEFAULT_CALORIES_PER_DAY);
     }
 
     public List<MealTo> getFilteredByDateTime(LocalDate startDate, LocalDate endDate, LocalTime startTime, LocalTime endTime) {
@@ -42,30 +47,35 @@ public class MealRestController {
         endDate = endDate != null ? endDate : LocalDate.MAX;
         startTime = startTime != null ? startTime : LocalTime.MIN;
         endTime = endTime != null ? endTime : LocalTime.MAX;
-        log.info("getAll from {} to {} and from {} to {}", startDate, endDate, startTime, endTime);
-        return MealsUtil.getFilteredWithExcess(service.getAll(authUserId()), MealsUtil.DEFAULT_CALORIES_PER_DAY, startDate, endDate, startTime, endTime);
+        int userId = SecurityUtil.authUserId();
+        log.info("getAll between {} {} and {} {} for user {}", startDate, startTime, endDate, endTime, userId);
+        return MealsUtil.getFilteredWithExcess(service.getAll(userId), MealsUtil.DEFAULT_CALORIES_PER_DAY, startDate, endDate, startTime, endTime);
     }
 
     public Meal get(int id) {
-        log.info("get meal with id={}", id);
-        return service.get(id, authUserId());
+        int userId = SecurityUtil.authUserId();
+        log.info("get meal {} for user {}", id, userId);
+        return service.get(id, userId);
     }
 
     public Meal create(Meal meal) {
-        log.info("create {}", meal);
+        int userId = SecurityUtil.authUserId();
+        log.info("create {} for user {}", meal, userId);
         checkNew(meal);
-        return service.create(meal, authUserId());
+        return service.create(meal, userId);
     }
 
     public void update(Meal meal, int id) {
-        log.info("update {} with id={}", meal, id);
+        int userId = SecurityUtil.authUserId();
+        log.info("update {} meal {} for user {}", meal, id, userId);
         assureIdConsistent(meal, id);
-        service.update(meal, id, authUserId());
+        service.update(meal, id, userId);
     }
 
     public void delete(int id) {
-        log.info("delete meal with id={}", id);
-        service.delete(id, authUserId());
+        int userId = SecurityUtil.authUserId();
+        log.info("delete meal {} for user {}", id, userId);
+        service.delete(id, userId);
     }
 
     public void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
@@ -75,7 +85,7 @@ public class MealRestController {
                 LocalDateTime.parse(request.getParameter("dateTime")),
                 request.getParameter("description"),
                 Integer.parseInt(request.getParameter("calories")),
-                authUserId());
+                SecurityUtil.authUserId());
 
         log.info(meal.isNew() ? "Create {}" : "Update {}", meal);
         if (meal.isNew()) create(meal);
@@ -96,24 +106,23 @@ public class MealRestController {
             case "create":
             case "update":
                 final Meal meal = "create".equals(action) ?
-                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000, authUserId()) :
+                        new Meal(LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES), "", 1000, SecurityUtil.authUserId()) :
                         get(getId(request));
                 request.setAttribute("meal", meal);
                 request.getRequestDispatcher("/mealForm.jsp").forward(request, response);
                 break;
             case "filter":
                 log.info("filter");
-                LocalDate startDate = request.getParameter("startDate").isEmpty() ? null : DateTimeUtil.toDate(request.getParameter("startDate"));
-                LocalDate endDate = request.getParameter("endDate").isEmpty() ? null : DateTimeUtil.toDate(request.getParameter("endDate"));
-                LocalTime startTime = request.getParameter("startTime").isEmpty() ? null : DateTimeUtil.toTime(request.getParameter("startTime"));
-                LocalTime endTime = request.getParameter("endTime").isEmpty() ? null : DateTimeUtil.toTime(request.getParameter("endTime"));
+                LocalDate startDate = DateTimeUtil.parseLocalDate(request.getParameter("startDate"));
+                LocalDate endDate = DateTimeUtil.parseLocalDate(request.getParameter("endDate"));
+                LocalTime startTime = DateTimeUtil.parseLocalTime(request.getParameter("startTime"));
+                LocalTime endTime = DateTimeUtil.parseLocalTime(request.getParameter("endTime"));
                 request.setAttribute("meals", getFilteredByDateTime(startDate, endDate, startTime, endTime));
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;
             case "all":
             default:
                 log.info("getAll");
-                SecurityUtil.setUserId(Integer.parseInt(request.getParameter("userId")));
                 request.setAttribute("meals", getAll());
                 request.getRequestDispatcher("/meals.jsp").forward(request, response);
                 break;

@@ -38,26 +38,20 @@ public class InMemoryMealRepositoryImpl implements MealRepository {
 
     @Override
     public boolean delete(int id, int userId) {
-        if (repository.containsKey(id) && repository.get(id).getUserId() == userId) {
-            repository.remove(id);
-            return true;
-        } else {
-            return false;
-        }
+        return repository.containsKey(id) && repository.get(id).getUserId() == userId && repository.remove(id) != null;
     }
 
     @Override
     public Meal get(int id, int userId) {
         Meal meal = repository.get(id);
-        if (meal != null && meal.getUserId() == userId) return meal;
-        else return null;
+        return meal != null && meal.getUserId() == userId ? meal : null;
     }
 
     @Override
     public List<Meal> getAll(int userId) {
         return repository.values().stream()
                 .filter(meal -> meal.getUserId() == userId)
-                .sorted(Comparator.comparing(Meal::getDate).reversed())
+                .sorted(Comparator.comparing(Meal::getDateTime).reversed())
                 .collect(Collectors.toList());
     }
 }
