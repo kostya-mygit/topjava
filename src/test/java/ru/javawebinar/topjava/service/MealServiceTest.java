@@ -2,6 +2,7 @@ package ru.javawebinar.topjava.service;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.jdbc.Sql;
@@ -10,6 +11,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Month;
 import java.util.List;
@@ -24,6 +26,10 @@ import static ru.javawebinar.topjava.MealTestData.*;
 @RunWith(SpringRunner.class)
 @Sql(scripts = "classpath:db/populateDB.sql", config = @SqlConfig(encoding = "UTF-8"))
 public class MealServiceTest {
+
+    static {
+        SLF4JBridgeHandler.install();
+    }
 
     @Autowired
     MealService service;
@@ -51,10 +57,10 @@ public class MealServiceTest {
     }
 
     @Test
-    public void getBetweenDateTimes() throws Exception {
-        List<Meal> betweenDateTimes = service.getBetweenDateTimes(LocalDateTime.of(2015, Month.MAY, 30, 7, 0),
-                LocalDateTime.of(2015, Month.MAY, 31, 11, 0), USER_ID);
-        assertMatch(betweenDateTimes, MEAL4, MEAL1);
+    public void getBetweenDates() throws Exception {
+        List<Meal> betweenDates = service.getBetweenDates(LocalDate.of(2015, Month.MAY, 30),
+                LocalDate.of(2015, Month.MAY, 30), USER_ID);
+        assertMatch(betweenDates, MEAL3, MEAL2, MEAL1);
     }
 
     @Test
