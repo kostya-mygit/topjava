@@ -11,6 +11,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
+import javax.persistence.NoResultException;
 import java.time.LocalDate;
 import java.time.Month;
 
@@ -59,7 +60,7 @@ public class MealServiceTest {
         assertMatch(actual, ADMIN_MEAL1);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = NoResultException.class)
     public void getNotFound() throws Exception {
         service.get(MEAL1_ID, ADMIN_ID);
     }
@@ -71,7 +72,7 @@ public class MealServiceTest {
         assertMatch(service.get(MEAL1_ID, USER_ID), updated);
     }
 
-    @Test(expected = NotFoundException.class)
+    @Test(expected = NoResultException.class)
     public void updateNotFound() throws Exception {
         service.update(MEAL1, ADMIN_ID);
     }
