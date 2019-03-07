@@ -5,7 +5,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.ExternalResource;
-import org.junit.rules.TestName;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 import org.junit.runner.RunWith;
@@ -18,7 +17,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
-import javax.persistence.NoResultException;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -106,7 +104,7 @@ public class MealServiceTest {
 
     @Test
     public void getNotFound() throws Exception {
-        exception.expect(NoResultException.class);
+        exception.expect(NotFoundException.class);
         service.get(MEAL1_ID, ADMIN_ID);
     }
 
@@ -119,7 +117,7 @@ public class MealServiceTest {
 
     @Test
     public void updateNotFound() throws Exception {
-        exception.expect(NoResultException.class);
+        exception.expect(NotFoundException.class);
         service.update(MEAL1, ADMIN_ID);
     }
 
