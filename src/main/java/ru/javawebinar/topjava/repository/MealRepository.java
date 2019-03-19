@@ -22,7 +22,7 @@ public interface MealRepository {
     // ORDERED dateTime desc
     List<Meal> getBetween(LocalDateTime startDate, LocalDateTime endDate, int userId);
 
-    default Meal getByIdWithUser(int id) {
+    default Meal getByIdWithUser(int id, int userId) {
         throw new UnsupportedOperationException();
     }
 }

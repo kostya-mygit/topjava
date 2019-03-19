@@ -63,6 +63,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User getByIdWithMeal(int id) {
-        return repository.getByIdWithMeal(id);
+        return checkNotFoundWithId(repository.getByIdWithMeal(id), id);
     }
 }
