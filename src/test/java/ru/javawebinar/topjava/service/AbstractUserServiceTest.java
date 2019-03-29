@@ -12,13 +12,12 @@ import ru.javawebinar.topjava.repository.JpaUtil;
 import ru.javawebinar.topjava.util.exception.NotFoundException;
 
 import javax.validation.ConstraintViolationException;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 import static ru.javawebinar.topjava.Profiles.JDBC;
 import static ru.javawebinar.topjava.UserTestData.*;
+import static ru.javawebinar.topjava.model.Role.ROLE_ADMIN;
+import static ru.javawebinar.topjava.model.Role.ROLE_USER;
 
 public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
@@ -92,6 +91,13 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
     public void getAll() throws Exception {
         List<User> all = service.getAll();
         assertMatch(all, ADMIN, USER);
+    }
+
+    @Test
+    public void getRoles() throws Exception {
+        User user = service.get(ADMIN_ID);
+        Set<Role> roles = user.getRoles();
+        assertMatch(roles, ROLE_ADMIN, ROLE_USER);
     }
 
     @Test
