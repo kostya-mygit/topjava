@@ -15,8 +15,6 @@ import java.util.*;
 
 import static ru.javawebinar.topjava.Profiles.JDBC;
 import static ru.javawebinar.topjava.UserTestData.*;
-import static ru.javawebinar.topjava.model.Role.ROLE_ADMIN;
-import static ru.javawebinar.topjava.model.Role.ROLE_USER;
 
 public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
@@ -58,8 +56,8 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Test
     public void get() throws Exception {
-        User user = service.get(USER_ID);
-        assertMatch(user, USER);
+        User user = service.get(ADMIN_ID);
+        assertMatch(user, ADMIN);
     }
 
     @Test(expected = NotFoundException.class)
@@ -69,30 +67,23 @@ public abstract class AbstractUserServiceTest extends AbstractServiceTest {
 
     @Test
     public void getByEmail() throws Exception {
-        User user = service.getByEmail("user@yandex.ru");
-        assertMatch(user, USER);
+        User user = service.getByEmail("admin@gmail.com");
+        assertMatch(user, ADMIN);
     }
 
     @Test
     public void update() throws Exception {
-        User updated = new User(USER);
+        User updated = new User(ADMIN);
         updated.setName("UpdatedName");
         updated.setCaloriesPerDay(330);
         service.update(updated);
-        assertMatch(service.get(USER_ID), updated);
+        assertMatch(service.get(ADMIN_ID), updated);
     }
 
     @Test
     public void getAll() throws Exception {
         List<User> all = service.getAll();
         assertMatch(all, ADMIN, USER);
-    }
-
-    @Test
-    public void getRoles() throws Exception {
-        User user = service.get(ADMIN_ID);
-        Set<Role> roles = user.getRoles();
-        assertMatch(roles, ROLE_ADMIN, ROLE_USER);
     }
 
     @Test
