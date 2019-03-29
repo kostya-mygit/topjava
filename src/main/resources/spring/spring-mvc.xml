@@ -31,7 +31,7 @@
           p:cacheSeconds="5"
           p:defaultEncoding="UTF-8">
         <!--<property name="basenames" value="file:///#{systemEnvironment['TOPJAVA_ROOT']}/config/messages/app"/>-->
-        <property name="basenames" value="file:///c:/java/topjava/config/messages/app"/>
+        <property name="basenames" value="file:///c:/java/topjava16/topjava_clone/topjava/config/messages/app"/>
         <property name="fallbackToSystemLocale" value="false"/>
     </bean>
 </beans>
