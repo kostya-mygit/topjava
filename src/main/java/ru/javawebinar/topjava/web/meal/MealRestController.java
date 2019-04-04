@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.web.meal;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -8,9 +7,11 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.to.MealTo;
+import ru.javawebinar.topjava.util.formatter.LocalDateTimeAnnotation;
 
 import java.net.URI;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @RestController
@@ -55,10 +56,11 @@ public class MealRestController extends AbstractMealController {
     }
 
     @GetMapping("/between")
-    public List<MealTo> getBetween(@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam LocalDateTime startDate,
-                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam LocalDateTime startTime,
-                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam LocalDateTime endDate,
-                                   @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) @RequestParam LocalDateTime endTime) {
-        return super.getBetween(startDate.toLocalDate(), startTime.toLocalTime(), endDate.toLocalDate(), endTime.toLocalTime());
+    public List<MealTo> getBetween(@LocalDateTimeAnnotation(type = LocalDateTimeAnnotation.TYPE.DATE) @RequestParam LocalDate startDate,
+                                   @LocalDateTimeAnnotation(type = LocalDateTimeAnnotation.TYPE.TIME) @RequestParam LocalTime startTime,
+                                   @LocalDateTimeAnnotation(type = LocalDateTimeAnnotation.TYPE.DATE) @RequestParam LocalDate endDate,
+                                   @LocalDateTimeAnnotation(type = LocalDateTimeAnnotation.TYPE.TIME) @RequestParam LocalTime endTime) {
+
+        return super.getBetween(startDate, startTime, endDate, endTime);
     }
 }
