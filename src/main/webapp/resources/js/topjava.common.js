@@ -52,6 +52,16 @@ function save() {
     });
 }
 
+function changeAvailability(id, enabled) {
+    $.ajax({
+        type: "POST",
+        url: context.ajaxUrl + id,
+        data: {enabled:enabled}
+    }).done(function () {
+        updateTable();
+    });
+}
+
 function filter() {
     $.ajax({
         type: "GET",
