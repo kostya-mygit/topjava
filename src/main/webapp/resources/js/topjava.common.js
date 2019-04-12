@@ -74,6 +74,7 @@ function filter() {
 
 function clearFilter() {
     $("#filter").find(":input").val("");
+    $.get("ajax/profile/meals/", updateTable());
 }
 
 let failedNote;
