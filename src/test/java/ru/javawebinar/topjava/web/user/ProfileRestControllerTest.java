@@ -12,6 +12,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.*;
 import static ru.javawebinar.topjava.web.user.ProfileRestController.REST_URL;
 
@@ -19,15 +20,23 @@ class ProfileRestControllerTest extends AbstractControllerTest {
 
     @Test
     void testGet() throws Exception {
-        mockMvc.perform(get(REST_URL))
+        mockMvc.perform(get(REST_URL)
+                .with(userHttpBasic(USER)))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
                 .andExpect(contentJson(USER));
     }
 
     @Test
+    void testGetUnAuth() throws Exception {
+        mockMvc.perform(get(REST_URL))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
     void testDelete() throws Exception {
-        mockMvc.perform(delete(REST_URL))
+        mockMvc.perform(delete(REST_URL)
+                .with(userHttpBasic(USER)))
                 .andExpect(status().isNoContent());
         assertMatch(userService.getAll(), ADMIN);
     }
@@ -37,6 +46,7 @@ class ProfileRestControllerTest extends AbstractControllerTest {
         UserTo updatedTo = new UserTo(null, "newName", "newemail@ya.ru", "newPassword", 1500);
 
         mockMvc.perform(put(REST_URL).contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(USER))
                 .content(JsonUtil.writeValue(updatedTo)))
                 .andDo(print())
                 .andExpect(status().isNoContent());
