@@ -18,6 +18,10 @@ public class DateTimeUtil {
     private DateTimeUtil() {
     }
 
+    public static DateTimeFormatter getDateTimeFormatter() {
+        return DATE_TIME_FORMATTER;
+    }
+
     public static LocalDateTime adjustStartDateTime(LocalDate localDate) {
         return adjustDateTime(localDate, MIN_DATE, LocalTime.MIN);
     }
