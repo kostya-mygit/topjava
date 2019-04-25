@@ -26,5 +26,12 @@
                 </button>
             </form:form>
         </sec:authorize>
+        <div class="dropdown">
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">${pageContext.response.locale}</a>
+            <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?language=en">English</a>
+                <a class="dropdown-item" href="${requestScope['javax.servlet.forward.request_uri']}?language=ru">Русский</a>
+            </div>
+        </div>
     </div>
 </nav>

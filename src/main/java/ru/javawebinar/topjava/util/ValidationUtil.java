@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.util;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import ru.javawebinar.topjava.HasId;
 import ru.javawebinar.topjava.util.exception.IllegalRequestDataException;
@@ -9,6 +8,9 @@ import ru.javawebinar.topjava.util.exception.NotFoundException;
 import java.util.StringJoiner;
 
 public class ValidationUtil {
+
+    public static final String MESSAGE_DUPLICATE_USER_EMAIL = "User with this email already exists";
+    public static final String MESSAGE_DUPLICATE_MEAL_DATE_TIME = "Meal with this Date and Time already exists";
 
     private ValidationUtil() {
     }
@@ -58,7 +60,7 @@ public class ValidationUtil {
         return result;
     }
 
-    public static ResponseEntity<String> getErrorResponse(BindingResult result) {
+    public static String getErrorResponse(BindingResult result) {
         StringJoiner joiner = new StringJoiner("<br>");
         result.getFieldErrors().forEach(
                 fe -> {
@@ -70,10 +72,19 @@ public class ValidationUtil {
                         joiner.add(msg);
                     }
                 });
-        return ResponseEntity.unprocessableEntity().body(joiner.toString());
+        //return ResponseEntity.unprocessableEntity().body(joiner.toString());
+        return joiner.toString();
     }
 
     public static String getMessage(Throwable e) {
         return e.getLocalizedMessage() != null ? e.getLocalizedMessage() : e.getClass().getName();
+    }
+
+    public static boolean checkDuplicateUserEmail(String message) {
+        return message.contains("users_unique_email_idx");
+    }
+
+    public static boolean checkDuplicateMealDateTime(String message) {
+        return message.contains("meals_unique_user_datetime_idx");
     }
 }

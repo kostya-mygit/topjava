@@ -2,14 +2,17 @@ package ru.javawebinar.topjava.web.user;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
+import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.util.Collections;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -88,10 +91,24 @@ class AdminRestControllerTest extends AbstractControllerTest {
         mockMvc.perform(put(REST_URL + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(ADMIN))
-                .content(JsonUtil.writeValue(updated)))
+                .content(JsonUtil.writeValue(updated))
+                .content(jsonWithPassword(updated, "password")))
                 .andExpect(status().isNoContent());
 
         assertMatch(userService.get(USER_ID), updated);
+    }
+
+    @Test
+    void testUpdateValidationError() throws Exception {
+        User updated = new User(USER);
+        updated.setName("");
+        updated.setRoles(Collections.singletonList(Role.ROLE_ADMIN));
+        mockMvc.perform(put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(JsonUtil.writeValue(updated))
+                .content(jsonWithPassword(updated, "password")))
+                .andExpect(status().isUnprocessableEntity());
     }
 
     @Test
@@ -108,6 +125,31 @@ class AdminRestControllerTest extends AbstractControllerTest {
 
         assertMatch(returned, expected);
         assertMatch(userService.getAll(), ADMIN, expected, USER);
+    }
+
+    @Test
+    void testCreateValidationError() throws Exception {
+        User expected = new User(null, "New", "new@gmail.com", "newPass", 23000, Role.ROLE_USER, Role.ROLE_ADMIN);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(jsonWithPassword(expected, "newPass")))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void testCreateEmailError() throws Exception {
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        User expected = new User(null, "New", "admin@gmail.com", "newPass", 2300, Role.ROLE_USER, Role.ROLE_ADMIN);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(jsonWithPassword(expected, "newPass")))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString(ValidationUtil.MESSAGE_DUPLICATE_USER_EMAIL)));
     }
 
     @Test

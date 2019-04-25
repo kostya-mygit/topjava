@@ -4,12 +4,18 @@ package ru.javawebinar.topjava.web.meal;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
+import ru.javawebinar.topjava.util.ValidationUtil;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
+import java.time.Month;
+
+import static java.time.LocalDateTime.of;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -83,6 +89,17 @@ class MealRestControllerTest extends AbstractControllerTest {
     }
 
     @Test
+    void testUpdateValidationError() throws Exception {
+        Meal updated = new Meal(MEAL1_ID, MEAL1.getDateTime(), "Обновленный завтрак", 20000);
+
+        mockMvc.perform(put(REST_URL + MEAL1_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(updated))
+                .with(userHttpBasic(USER)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void testCreate() throws Exception {
         Meal created = getCreated();
         ResultActions action = mockMvc.perform(post(REST_URL)
@@ -95,6 +112,31 @@ class MealRestControllerTest extends AbstractControllerTest {
 
         assertMatch(returned, created);
         assertMatch(service.getAll(ADMIN_ID), ADMIN_MEAL2, created, ADMIN_MEAL1);
+    }
+
+    @Test
+    void testCreateValidationError() throws Exception {
+        Meal created = new Meal(null, of(2015, Month.JUNE, 1, 18, 0), "Созданный ужин", 30000);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(created))
+                .with(userHttpBasic(ADMIN)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void testCreateDateTimeError() throws Exception {
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        Meal created = new Meal(null, of(2015, Month.MAY, 30, 10, 0), "Завтрак", 500);
+        mockMvc.perform(post(REST_URL)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(created))
+                .with(userHttpBasic(USER)))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(content().string(containsString(ValidationUtil.MESSAGE_DUPLICATE_MEAL_DATE_TIME)));
     }
 
     @Test

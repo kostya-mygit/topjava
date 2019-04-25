@@ -7,6 +7,12 @@
 #### get Users 100001
 `curl -s http://localhost:8080/topjava/rest/admin/users/100001 --user admin@gmail.com:admin`
 
+#### create User
+`curl -s -X POST -d '{"name":"New","email":"new@gmail.com","password":"newPass"}' -H 'Content-Type:application/json;charset=UTF-8' http://localhost:8080/topjava/rest/admin/users --user admin@gmail.com:admin`
+
+#### update User
+`curl -s -X PUT -d '{"name":"New","email":"update@gmail.com","password":"newPass"}' -H 'Content-Type: application/json' http://localhost:8080/topjava/rest/admin/users/100001 --user admin@gmail.com:admin`
+
 #### get All Meals
 `curl -s http://localhost:8080/topjava/rest/profile/meals --user user@yandex.ru:password`
 
