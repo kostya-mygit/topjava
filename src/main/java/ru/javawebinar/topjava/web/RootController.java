@@ -1,6 +1,5 @@
 package ru.javawebinar.topjava.web;
 
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -13,8 +12,6 @@ import ru.javawebinar.topjava.util.UserUtil;
 import ru.javawebinar.topjava.web.user.AbstractUserController;
 
 import javax.validation.Valid;
-
-import static ru.javawebinar.topjava.web.ExceptionInfoHandler.EXCEPTION_DUPLICATE_EMAIL;
 
 @Controller
 public class RootController extends AbstractUserController {
@@ -51,15 +48,10 @@ public class RootController extends AbstractUserController {
         if (result.hasErrors()) {
             return "profile";
         }
-        try {
-            super.update(userTo, SecurityUtil.authUserId());
-            SecurityUtil.get().update(userTo);
-            status.setComplete();
-            return "redirect:meals";
-        } catch (DataIntegrityViolationException ex) {
-            result.rejectValue("email", EXCEPTION_DUPLICATE_EMAIL);
-            return "profile";
-        }
+        super.update(userTo, SecurityUtil.authUserId());
+        SecurityUtil.get().update(userTo);
+        status.setComplete();
+        return "redirect:meals";
     }
 
     @GetMapping("/register")
@@ -75,14 +67,8 @@ public class RootController extends AbstractUserController {
             model.addAttribute("register", true);
             return "profile";
         }
-        try {
-            super.create(UserUtil.createNewFromTo(userTo));
-            status.setComplete();
-            return "redirect:login?message=app.registered&username=" + userTo.getEmail();
-        } catch (DataIntegrityViolationException ex) {
-            result.rejectValue("email", EXCEPTION_DUPLICATE_EMAIL);
-            model.addAttribute("register", true);
-            return "profile";
-        }
+        super.create(UserUtil.createNewFromTo(userTo));
+        status.setComplete();
+        return "redirect:login?message=app.registered&username=" + userTo.getEmail();
     }
 }
