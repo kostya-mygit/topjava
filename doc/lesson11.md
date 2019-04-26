@@ -81,7 +81,7 @@
 #### Apply 11_10_auth_user.patch
 - [Автоподстановка в контроллерах](https://docs.spring.io/spring-security/site/docs/current/reference/htmlsingle/#mvc-authentication-principal)
   - не стал делать автоподстановку по всем контроллерам (в абстрактных контроллерах проще работать с `SecurityUtil`, чем получать его через `@AuthenticationPrincipal` и передавать параметром)
-- [В JSP: the authentication Tag](https://docs.spring.io/spring-security/site/docs/current/reference/html/taglibs.html#the-authentication-tag)
+- [В JSP: the authentication Tag](https://docs.spring.io/spring-security/site/docs/4.2.x/reference/html/taglibs.html#the-authentication-tag)
   - авторизованный пользователь доступен в JSP через tag `authentication`, интерсептор становится не нужным
 
 ### Ограничение модификации пользователей
