@@ -6,20 +6,21 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.javawebinar.topjava.model.Role;
 import ru.javawebinar.topjava.model.User;
-import ru.javawebinar.topjava.util.ValidationUtil;
+import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
+import ru.javawebinar.topjava.web.MessageUtil;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.util.Collections;
 
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.javawebinar.topjava.TestUtil.readFromJson;
 import static ru.javawebinar.topjava.TestUtil.userHttpBasic;
 import static ru.javawebinar.topjava.UserTestData.*;
+import static ru.javawebinar.topjava.web.ExceptionInfoHandler.EXCEPTION_DUPLICATE_EMAIL;
+
 
 class AdminRestControllerTest extends AbstractControllerTest {
 
@@ -102,13 +103,32 @@ class AdminRestControllerTest extends AbstractControllerTest {
     void testUpdateValidationError() throws Exception {
         User updated = new User(USER);
         updated.setName("");
-        updated.setRoles(Collections.singletonList(Role.ROLE_ADMIN));
         mockMvc.perform(put(REST_URL + USER_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(ADMIN))
                 .content(JsonUtil.writeValue(updated))
                 .content(jsonWithPassword(updated, "password")))
-                .andExpect(status().isUnprocessableEntity());
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()));
+    }
+
+    @Test
+    void testUpdateDuplicateEmailError() throws Exception {
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        User updated = new User(USER);
+        updated.setEmail("admin@gmail.com");
+        mockMvc.perform(put(REST_URL + USER_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .with(userHttpBasic(ADMIN))
+                .content(JsonUtil.writeValue(updated))
+                .content(jsonWithPassword(updated, "password")))
+                .andExpect(status().isConflict())
+                .andDo(print())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+                .andExpect(jsonPath("$.details").value(messageUtil.getMessage(EXCEPTION_DUPLICATE_EMAIL, MessageUtil.RU_LOCALE)));
     }
 
     @Test
@@ -134,11 +154,13 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .with(userHttpBasic(ADMIN))
                 .content(jsonWithPassword(expected, "newPass")))
-                .andExpect(status().isUnprocessableEntity());
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()));
     }
 
     @Test
-    void testCreateEmailError() throws Exception {
+    void testCreateDuplicateEmailError() throws Exception {
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
@@ -149,7 +171,8 @@ class AdminRestControllerTest extends AbstractControllerTest {
                 .content(jsonWithPassword(expected, "newPass")))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(content().string(containsString(ValidationUtil.MESSAGE_DUPLICATE_USER_EMAIL)));
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+                .andExpect(jsonPath("$.details").value(messageUtil.getMessage(EXCEPTION_DUPLICATE_EMAIL, MessageUtil.RU_LOCALE)));
     }
 
     @Test

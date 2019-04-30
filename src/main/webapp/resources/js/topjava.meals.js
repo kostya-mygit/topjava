@@ -59,10 +59,13 @@ $(function () {
             ],
             "createdRow": function (row, data, dataIndex) {
                 $(row).attr("data-mealExcess", data.excess);
-            },
+            }
         },
         updateTable: updateFilteredTable
+
     });
+
+    $.datetimepicker.setLocale(localeCode);
 
 //  http://xdsoft.net/jqplugins/datetimepicker/
     const startDate = $('#startDate');

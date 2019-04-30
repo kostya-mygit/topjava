@@ -8,18 +8,17 @@ import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.test.web.servlet.ResultActions;
 import ru.javawebinar.topjava.model.Meal;
 import ru.javawebinar.topjava.service.MealService;
-import ru.javawebinar.topjava.util.ValidationUtil;
+import ru.javawebinar.topjava.util.exception.ErrorType;
 import ru.javawebinar.topjava.web.AbstractControllerTest;
+import ru.javawebinar.topjava.web.MessageUtil;
 import ru.javawebinar.topjava.web.json.JsonUtil;
 
 import java.time.Month;
 
 import static java.time.LocalDateTime.of;
-import static org.hamcrest.CoreMatchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 import static ru.javawebinar.topjava.MealTestData.assertMatch;
 import static ru.javawebinar.topjava.MealTestData.contentJson;
 import static ru.javawebinar.topjava.MealTestData.*;
@@ -28,6 +27,7 @@ import static ru.javawebinar.topjava.UserTestData.*;
 import static ru.javawebinar.topjava.model.AbstractBaseEntity.START_SEQ;
 import static ru.javawebinar.topjava.util.MealsUtil.createWithExcess;
 import static ru.javawebinar.topjava.util.MealsUtil.getWithExcess;
+import static ru.javawebinar.topjava.web.ExceptionInfoHandler.EXCEPTION_DUPLICATE_DATETIME;
 
 class MealRestControllerTest extends AbstractControllerTest {
 
@@ -90,13 +90,34 @@ class MealRestControllerTest extends AbstractControllerTest {
 
     @Test
     void testUpdateValidationError() throws Exception {
-        Meal updated = new Meal(MEAL1_ID, MEAL1.getDateTime(), "Обновленный завтрак", 20000);
+        Meal updated = getUpdated();
+        updated.setCalories(20000);
 
         mockMvc.perform(put(REST_URL + MEAL1_ID)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.writeValue(updated))
                 .with(userHttpBasic(USER)))
-                .andExpect(status().isUnprocessableEntity());
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()));
+    }
+
+    @Test
+    void testUpdateDuplicateDateTimeError() throws Exception {
+        TestTransaction.flagForCommit();
+        TestTransaction.end();
+
+        Meal updated = getUpdated();
+        updated.setDateTime(of(2015, Month.MAY, 30, 13, 0));
+
+        mockMvc.perform(put(REST_URL + MEAL1_ID)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(JsonUtil.writeValue(updated))
+                .with(userHttpBasic(USER)))
+                .andDo(print())
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+                .andExpect(jsonPath("$.details").value(messageUtil.getMessage(EXCEPTION_DUPLICATE_DATETIME, MessageUtil.RU_LOCALE)));
     }
 
     @Test
@@ -121,11 +142,14 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(JsonUtil.writeValue(created))
                 .with(userHttpBasic(ADMIN)))
-                .andExpect(status().isUnprocessableEntity());
+                .andDo(print())
+                .andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+        ;
     }
 
     @Test
-    void testCreateDateTimeError() throws Exception {
+    void testCreateDuplicateDateTimeError() throws Exception {
         TestTransaction.flagForCommit();
         TestTransaction.end();
 
@@ -136,7 +160,8 @@ class MealRestControllerTest extends AbstractControllerTest {
                 .with(userHttpBasic(USER)))
                 .andDo(print())
                 .andExpect(status().isConflict())
-                .andExpect(content().string(containsString(ValidationUtil.MESSAGE_DUPLICATE_MEAL_DATE_TIME)));
+                .andExpect(jsonPath("$.type").value(ErrorType.VALIDATION_ERROR.name()))
+                .andExpect(jsonPath("$.details").value(messageUtil.getMessage(EXCEPTION_DUPLICATE_DATETIME, MessageUtil.RU_LOCALE)));
     }
 
     @Test

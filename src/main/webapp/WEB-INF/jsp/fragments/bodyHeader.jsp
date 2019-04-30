@@ -35,3 +35,7 @@
         </div>
     </div>
 </nav>
+
+<script type="text/javascript">
+    const localeCode = "${pageContext.response.locale}";
+</script>

@@ -19,12 +19,8 @@ public class GlobalControllerExceptionHandler {
         log.error("Exception at request " + req.getRequestURL(), e);
         ModelAndView mav = new ModelAndView("exception/exception");
         Throwable rootCause = ValidationUtil.getRootCause(e);
-        String message = ValidationUtil.getMessage(rootCause);
-        if (ValidationUtil.checkDuplicateUserEmail(message)) {
-            message = ValidationUtil.MESSAGE_DUPLICATE_USER_EMAIL;
-        }
         mav.addObject("exception", rootCause);
-        mav.addObject("message", message);
+        mav.addObject("message", ValidationUtil.getMessage(rootCause));
 
         // Interceptor is not invoked, put userTo
         AuthorizedUser authorizedUser = SecurityUtil.safeGet();

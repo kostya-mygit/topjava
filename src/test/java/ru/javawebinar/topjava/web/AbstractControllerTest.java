@@ -41,6 +41,9 @@ abstract public class AbstractControllerTest {
     @Autowired
     private CacheManager cacheManager;
 
+    @Autowired
+    protected MessageUtil messageUtil;
+
     @Autowired(required = false)
     private JpaUtil jpaUtil;
 
